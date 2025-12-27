@@ -1,8 +1,8 @@
 import Alert from "../model/Alert"
 
-class ApiController {
+export class ApiController {
     
-    private async fetchAlert(key: number) : Promise<Alert> {
+    public async fetchAlert(key: number) : Promise<Alert> {
         const apiUri = process.env.API_URI
 
         const response = await fetch(`${apiUri}/Alert/${key}`)
