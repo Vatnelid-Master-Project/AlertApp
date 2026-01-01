@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { View, Text, StyleSheet } from 'react-native';
-import { ApiController } from "../api/rest/ApiController"
-import Alert from "../api/model/Alert"
+import { ApiController } from "../../api/rest/ApiController"
+import Alert from "../../api/model/Alert"
 
 export const SettingsVeiw = () => {
     const apiController = new ApiController()
@@ -10,13 +10,10 @@ export const SettingsVeiw = () => {
 
     useEffect(() => {
         apiController.fetchAlert(1).then(alert => setAlert(alert))
-
-    },[apiController])
-    
-    console.log(alert)
+    },[])
 
     return <View>
-        <Text>{alert?.getKey ?? ""}</Text>
+        <Text>{alert?.key ?? ""}</Text>
     </View>
 
 }
