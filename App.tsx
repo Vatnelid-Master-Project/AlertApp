@@ -1,13 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
-import { SettingsVeiw } from './src/views/SettingsVeiw';
+import { SettingsVeiw } from './src/views/settings/SettingsVeiw';
+import Layout from './src/layout/Layout';
+import { useWebsocketAlert } from './src/common/hooks/useWebsocketAlert';
+import { wsUri } from './src/variables/ApiVariables';
 
 export default function App() {
+  useWebsocketAlert(wsUri)
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <SettingsVeiw></SettingsVeiw>
-      <StatusBar style="auto" />
+      <Layout/>
     </View>
   );
 }
