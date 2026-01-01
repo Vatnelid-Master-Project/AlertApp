@@ -14,10 +14,9 @@ export function useWebsocketAlert(wsUrl: string) {
     ws.onopen = () => console.log("WS connected");
     ws.onmessage = async (e) => {
       // assume JSON message like { title, body }
-      const msg = JSON.parse(e.data);
       console.log("Message recived")
 
-      Alert.alert("Fall", msg)
+      Alert.alert("Fall", "Hi")
     };
 
     ws.onclose = () => {
