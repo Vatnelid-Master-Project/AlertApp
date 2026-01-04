@@ -5,7 +5,7 @@ type Event = {
     key: number;
     unit: Unit;
     isFall: boolean;
-    eventOccurrance: Date;
+    eventOccurrence: string;
 }
 
 export default Event

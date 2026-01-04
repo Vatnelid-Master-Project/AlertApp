@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { AppState, Alert } from "react-native";
 import { apiKey } from "../../variables/ApiVariables";
+import  { triggerNotification, initNotifications } from "../notifications/customNotification";
 
 export function useWebsocketAlert(wsUrl: string) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -16,12 +17,12 @@ export function useWebsocketAlert(wsUrl: string) {
       // assume JSON message like { title, body }
       console.log("Message recived")
 
-      Alert.alert("Fall", "Hi")
+      await triggerNotification()
     };
 
     ws.onclose = () => {
       console.log("WS closed, retrying...");
-      setTimeout(connect, 10000);
+      setTimeout(connect, 100);
     };
 
     ws.onerror = () => {
@@ -30,6 +31,7 @@ export function useWebsocketAlert(wsUrl: string) {
   };
 
   useEffect(() => {
+    initNotifications();
     connect();
 
     const sub = AppState.addEventListener("change", (state) => {
