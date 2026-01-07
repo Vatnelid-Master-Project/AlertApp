@@ -1,51 +1,45 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button, FlatList, SectionList } from 'react-native';
-import Alert from '../api/model/Alert';
-import { ApiController } from '../api/rest/ApiController';
-import Event from '../api/model/Event';
-import Unit from '../api/model/Unit';
 import EventListView from '../views/event/eventList/EventListVeiw';
 import AlertListView from '../views/alert/alertList/AlertListVeiw';
 import UnitListView from '../views/unit/unitList/UnitListVeiw';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeScreenProps } from '../common/routes/types';
+import { RootStackParamList } from '../common/routes/types';
+import useAccessToken, { Auth0Token } from '../common/hooks/useAccessToken';
+import { useWebsocketAlert } from '../common/hooks/useWebsocketAlert';
+import { wsUri } from '../variables/ApiVariables';
+import * as SecureStore from 'expo-secure-store'
 
-const Layout = () => {
+type Props = NativeStackScreenProps<
+    RootStackParamList,
+    "Home"
+>
 
-    const controller = new ApiController()
+const Layout = ({route, navigation} : Props) => {
 
+    const [apiKey, setApiKey] = useState<string | null>("")
+    
+    useEffect(() => {
+        const bootstrap = async () => {
+            setApiKey(await SecureStore.getItemAsync("apiKey"))
+        }
+
+        bootstrap()
+    },[])
+
+    useWebsocketAlert(wsUri, apiKey)
+
+    const token : Auth0Token = useAccessToken()
     const [type, setType] = useState<string>('events')
-    const [alerts, setAlerts] = useState<Alert[]>()
-    const [events, setEvents] = useState<Event[]>()
-    const [units, setUnits] = useState<Unit[]>()
-    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
-
-    const fetchAlerts = useCallback(() => {
-        setIsRefreshing(true)
-        controller.fetchAlerts().then(alerts => setAlerts(alerts))
-        setIsRefreshing(false)
-    }, [])
-
-    const fetchEvents = useCallback(() => {
-        setIsRefreshing(true)
-        controller.fetchEvents().then(events => setEvents(events))
-        setIsRefreshing(false)
-    }, [])
-
-    const fetchUnits = useCallback(() => {
-        setIsRefreshing(true)
-        controller.fetchUnits().then(units => setUnits(units))
-        setIsRefreshing(false)
-    }, [])
 
     const listView = useCallback(() : React.JSX.Element => {
         switch(type){
             case 'events':
-                return <EventListView events={events} isRefreshing={isRefreshing} onRefresh={fetchEvents}/>
+                return <EventListView accessToken={token}/>
             case 'alerts':
-                return <AlertListView alerts={alerts} isRefreshing={isRefreshing} onRefresh={fetchAlerts}/>
+                return <AlertListView accessToken={token}/>
             case 'units':
-                return <UnitListView units={units} isRefreshing={isRefreshing} onRefresh={fetchUnits}/>
+                return <UnitListView accessToken={token}/>
             default:
                 return <View/>
         }

@@ -8,22 +8,23 @@ import AlertDetailsView from './src/views/alert/alertDetails/AlertDetailsView';
 import { RootStackParamList } from './src/common/routes/types';
 import EventDetailsView from './src/views/event/eventDetails/EventDetailsView';
 import UnitDetialsView from './src/views/unit/unitDetailsView/UnitDetailsView';
+import LogInScreenProps from './src/views/login/LogInView';
+import LogInView from './src/views/login/LogInView';
+import React, { useState } from 'react';
+import AppStack from './src/common/navigation/AppStack';
+import AuthStack from './src/common/navigation/AuthStack';
 
 
 export default function App() {
-  useWebsocketAlert(wsUri)
+
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
 
   const Stack = createNativeStackNavigator<RootStackParamList>();
 
   return (
     <>
       <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name='Home' component={Layout} />
-          <Stack.Screen name='AlertDetail' component={AlertDetailsView}/>
-          <Stack.Screen name='EventDetail' component={EventDetailsView}/>
-          <Stack.Screen name='UnitDetail' component={UnitDetialsView}/>
-        </Stack.Navigator>
+        {isLoggedIn ? (<AppStack/>) : <AuthStack onLogin={() => setIsLoggedIn(true)}/>}
       </NavigationContainer>
     </>
   );

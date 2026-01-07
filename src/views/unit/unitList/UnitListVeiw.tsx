@@ -1,22 +1,33 @@
 import { FlatList, RefreshControl } from "react-native"
 import Unit from "../../../api/model/Unit"
 import UnitListCard from "../../../common/component/listCard/UnitListCard"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useNavigation } from "@react-navigation/native"
-import { HomeScreenProps } from "../../../common/routes/types"
+import { HomeScreenProps, LogInScreenProps } from "../../../common/routes/types"
+import { Auth0Token } from "../../../common/hooks/useAccessToken"
+import { ApiController } from "../../../api/rest/ApiController"
 
 interface UnitListProps {
-    units: Unit[] | undefined
-    onRefresh: () => void
-    isRefreshing: boolean
+    accessToken: Auth0Token
 }
 
-const UnitListView = ({units, onRefresh, isRefreshing} : UnitListProps) => {
+const UnitListView = ({accessToken} : UnitListProps) => {
+    const [units, setUnits] = useState<Unit[]>()
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
     const navigation = useNavigation<HomeScreenProps>()
+
+    const controller = new ApiController()
+    
+
+    const fetchUnits = useCallback(() => {
+        setIsRefreshing(true)
+        controller.fetchUnits(accessToken).then(units => setUnits(units))
+        setIsRefreshing(false)
+    }, [])
     
     useEffect(() => {
-        onRefresh();
+        fetchUnits();
     }, [])
 
     const onPressHandler = (unit: Unit) => {
@@ -27,7 +38,7 @@ const UnitListView = ({units, onRefresh, isRefreshing} : UnitListProps) => {
         data={units}
         keyExtractor={(item) => String(item.key)}
         renderItem={({item}) => <UnitListCard unit={item} onPress={() => onPressHandler(item)}/>}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh}/>}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={fetchUnits}/>}
         />
 
 }

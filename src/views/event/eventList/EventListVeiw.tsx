@@ -2,22 +2,32 @@ import { FlatList, RefreshControl, Text } from "react-native"
 
 import Event from "../../../api/model/Event"
 import EventListCard from "../../../common/component/listCard/EventListCard"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useNavigation } from "@react-navigation/native"
-import { HomeScreenProps } from "../../../common/routes/types"
+import { HomeScreenProps, LogInScreenProps } from "../../../common/routes/types"
+import { Auth0Token } from "../../../common/hooks/useAccessToken"
+import { ApiController } from "../../../api/rest/ApiController"
 
 interface EventListProps {
-    events: Event[] | undefined
-    onRefresh: () => void
-    isRefreshing: boolean
+    accessToken: Auth0Token
 }
 
-const EventListView = ({events, onRefresh, isRefreshing}: EventListProps) => {
+const EventListView = ({accessToken}: EventListProps) => {
+    const [events, setEvents] = useState<Event[]>()
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
     const navigation = useNavigation<HomeScreenProps>();
 
+    const controller = new ApiController()
+
+    const fetchEvents = useCallback(() => {
+            setIsRefreshing(true)
+            controller.fetchEvents(accessToken).then(events => { setEvents(events)})
+            setIsRefreshing(false)
+        }, [])
+
     useEffect(() => {
-        onRefresh()
+        fetchEvents()
     }, [])
 
     const onPressHandler = (event: Event) => {
@@ -27,7 +37,7 @@ const EventListView = ({events, onRefresh, isRefreshing}: EventListProps) => {
     return <FlatList
         data={events}
         renderItem={({item}) => <EventListCard event={item} onPress={() => onPressHandler(item)}/>}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh}/>} 
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={fetchEvents}/>} 
         />
 }
 

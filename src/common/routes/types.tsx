@@ -4,17 +4,17 @@ import Event from "../../api/model/Event";
 import Unit from "../../api/model/Unit";
 
 export type RootStackParamList = {
-
- Home: undefined;
- 
- AlertDetail: {alert: Alert};
-
- EventDetail: {event: Event};
-
- UnitDetail: {unit: Unit};
-
+    Login: undefined;
+    Home: {apiKey: string};
+    AlertDetail: {alert: Alert};
+    EventDetail: {event: Event};
+    UnitDetail: {unit: Unit};
 };
 
+export type LogInScreenProps = NativeStackNavigationProp<
+    RootStackParamList,
+    "Login"
+>
 
 export type HomeScreenProps = NativeStackNavigationProp<
 

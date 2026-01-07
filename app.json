@@ -33,7 +33,8 @@
           "color": "#ffffff",
           "enableBackgroundRemoteNotifications": true
         }
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

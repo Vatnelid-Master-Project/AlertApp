@@ -1,51 +1,84 @@
-import { useEffect, useRef } from "react";
-import { AppState, Alert } from "react-native";
-import { apiKey } from "../../variables/ApiVariables";
+import { useCallback, useEffect, useRef } from "react";
+import { AppState, Alert, AppStateStatus } from "react-native";
 import  { triggerNotification, initNotifications } from "../notifications/customNotification";
 
-export function useWebsocketAlert(wsUrl: string) {
+export function useWebsocketAlert(wsUrl: string, apiKey: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const shouldReconnectRef = useRef(true);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
 
-  const connect = () => {
+  const cleanupSocket = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
     wsRef.current?.close();
-    const ws = new WebSocket(`${wsUrl}?apiKey=${apiKey}`
-    );
+    wsRef.current = null;
+  }, []);
+
+  const connect = useCallback(() => {
+    // Don’t connect without key
+    if (!apiKey) return;
+
+    // Don’t reconnect if app is not active
+    if (appStateRef.current !== "active") return;
+
+    // Close previous
+    wsRef.current?.close();
+
+    const ws = new WebSocket(`${wsUrl}?apiKey=${encodeURIComponent(apiKey)}`);
     wsRef.current = ws;
 
-    ws.onopen = () => console.log("WS connected");
-    ws.onmessage = async (e) => {
-      // assume JSON message like { title, body }
-      console.log("Message recived")
-
-      await triggerNotification()
+    ws.onopen = () => {
+      console.log("WS connected");
     };
 
-    ws.onclose = () => {
-      console.log("WS closed, retrying...");
-      setTimeout(connect, 100);
+    ws.onmessage = async () => {
+      console.log("Message received");
+      await triggerNotification();
     };
 
     ws.onerror = () => {
-      ws.close();
+      // This will usually lead to onclose as well
+      try { ws.close(); } catch {}
     };
-  };
+
+    ws.onclose = () => {
+      if (!shouldReconnectRef.current) return;
+      if (appStateRef.current !== "active") return;
+
+      // schedule reconnect
+      reconnectTimerRef.current = setTimeout(() => {
+        console.log("Websocket closed: reconnecting...")
+        connect();
+      }, 1000);
+    };
+  }, [wsUrl, apiKey]);
 
   useEffect(() => {
     initNotifications();
+
+    shouldReconnectRef.current = true;
+
+    // Connect when ready
     connect();
 
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") {
+    const sub = AppState.addEventListener("change", (nextState) => {
+      appStateRef.current = nextState;
+
+      if (nextState === "active") {
         connect();
       } else {
-        // background: close to avoid OS/network weirdness
-        wsRef.current?.close();
+        // prevent reconnect loops while backgrounded
+        cleanupSocket();
       }
     });
 
     return () => {
+      shouldReconnectRef.current = false;
       sub.remove();
-      wsRef.current?.close();
+      cleanupSocket();
     };
-  }, [wsUrl]);
+  }, [connect, cleanupSocket]);
 }

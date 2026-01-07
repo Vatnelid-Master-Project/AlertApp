@@ -1,23 +1,33 @@
 import { FlatList, RefreshControl, Text } from "react-native"
 import Alert from "../../../api/model/Alert"
 import AlertListCard from "../../../common/component/listCard/AlertListCard"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { NativeStackNavigationProp, NativeStackScreenProps } from "@react-navigation/native-stack"
-import { HomeScreenProps, RootStackParamList } from "../../../common/routes/types"
+import { HomeScreenProps, LogInScreenProps, RootStackParamList } from "../../../common/routes/types"
 import { useNavigation } from "@react-navigation/native"
+import { ApiController } from "../../../api/rest/ApiController"
+import { Auth0Token } from "../../../common/hooks/useAccessToken"
 
 interface AlertListProps {
-    alerts: Alert[] | undefined
-    onRefresh: () => void
-    isRefreshing: boolean
+    accessToken: Auth0Token
 }
 
-const AlertListView = ({alerts, onRefresh, isRefreshing} : AlertListProps) => {
+const AlertListView = ({accessToken} : AlertListProps) => {
 
+    const [alerts, setAlerts] = useState<Alert[]>()
+    const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
+
+    const controller = new ApiController()
     const navigation = useNavigation<HomeScreenProps>();
 
+    const fetchAlerts = useCallback(() => {
+            setIsRefreshing(true)
+            controller.fetchAlerts(accessToken).then(alerts => setAlerts(alerts))
+            setIsRefreshing(false)
+        }, [])
+
     useEffect(() => {
-        onRefresh();
+        fetchAlerts()
     }, [])
 
     const onPressHandler = (alert: Alert) => {
@@ -28,7 +38,7 @@ const AlertListView = ({alerts, onRefresh, isRefreshing} : AlertListProps) => {
         data={alerts}
         keyExtractor={(item) => String(item.key)}
         renderItem={({item}) => <AlertListCard alert={item} onPress={() => onPressHandler(item)}/>}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={fetchAlerts} />}
         />
 }
 
