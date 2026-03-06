@@ -13,7 +13,8 @@ interface EventListProps {
 }
 
 const EventListView = ({accessToken}: EventListProps) => {
-    const [events, setEvents] = useState<Event[]>()
+    const [events, setEvents] = useState<Event[]>([])
+    const [lastDate, setLastDate] = useState<String>("")
     const [isRefreshing, setIsRefreshing] = useState<boolean>(false)
 
     const navigation = useNavigation<HomeScreenProps>();
@@ -22,13 +23,45 @@ const EventListView = ({accessToken}: EventListProps) => {
 
     const fetchEvents = useCallback(() => {
             setIsRefreshing(true)
-            controller.fetchEvents(accessToken).then(events => { setEvents(events)})
+            controller.fetchEvents(accessToken, lastDate).then(e => { 
+                setEvents(prev => prev.concat(e))
+            })
+            const currentlastDate = new Date (events[events?.length - 1]?.eventOccurrence)
+            const currentMonth = currentlastDate.getMonth() + 1
+            
+            const lastDateString = 
+                currentlastDate.getFullYear() + 
+                "-" + currentMonth + 
+                "-" + currentlastDate.getDate() + "T" +
+                currentlastDate.getHours() + 
+                ":" + currentlastDate.getMinutes() + 
+                ":" + currentlastDate.getSeconds()
+
+            
+            setLastDate(lastDateString)
+            console.log(lastDate)
             setIsRefreshing(false)
-        }, [])
+        }, [accessToken, lastDate, controller])
 
     useEffect(() => {
+
+        if (lastDate === ""){
+            const currentDate = new Date()
+            const currentMonth = currentDate.getMonth() + 1
+
+            const currentDateString = 
+            currentDate.getFullYear()
+            + "-" 
+            + currentMonth
+            + "-"
+            + currentDate.getDate()
+            + "T023:59:59"
+    
+            setLastDate(currentDateString)
+        }
+
         fetchEvents()
-    }, [])
+    }, [lastDate])
 
     const onPressHandler = (event: Event) => {
         navigation.navigate("EventDetail", {event})

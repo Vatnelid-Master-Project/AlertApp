@@ -20,8 +20,9 @@ export class ApiController {
         return await response.json()
     }
 
-    public async fetchAlerts(accessToken : Auth0Token) : Promise<Alert[]> {
-        const response = await fetch(`${apiUri}/Alert`, {
+    public async fetchAlerts(accessToken : Auth0Token, date: String) : Promise<Alert[]> {
+        
+        const response = await fetch(`${apiUri}/Alert?limit=5&date=${date}`, {
             headers: {
                 "Authorization": `Bearer ${accessToken.access_token}`
             }
@@ -34,8 +35,9 @@ export class ApiController {
         return await response.json()
     }
 
-    public async fetchEvents(accessToken: Auth0Token) : Promise<Event[]> {
-        const response = await fetch(`${apiUri}/Event`, {
+    public async fetchEvents(accessToken: Auth0Token, date: String) : Promise<Event[]> {
+        
+        const response = await fetch(`${apiUri}/Event?limit=5&date=${date}`, {
             headers: {
                 "Authorization": `Bearer ${accessToken.access_token}`
             }

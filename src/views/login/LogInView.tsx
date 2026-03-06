@@ -4,6 +4,7 @@ import { ApiController } from "../../api/rest/ApiController"
 import { LogInScreenProps } from "../../common/routes/types"
 import { useNavigation } from "@react-navigation/native"
 import * as SecureStore from "expo-secure-store";
+import { apiKey } from "../../variables/ApiVariables"
 
 type ApiKey = {
     apiKey: string
@@ -19,7 +20,7 @@ const LogInView = ({onLogin} : LogInProps) => {
 
     const [userName, setUserName] = useState<string>("")
     const [password, setPassword] = useState<string>("")
-    const [apiKey, setApiKey] = useState<ApiKey | undefined>(undefined)
+    const [apiKey, setApiKey] = useState<ApiKey | undefined>()
     
     const onChangeUsername = (username: string) => {
         setUserName(username)
@@ -32,7 +33,7 @@ const LogInView = ({onLogin} : LogInProps) => {
     const handleLogIn = () => {
         controller.authenticate(userName, password).then((key : ApiKey) => {
             if (key.apiKey === ""){
-                setApiKey(undefined)
+                Alert.alert("Wrong password or username")
             } else {
                 setApiKey(key)
             }
@@ -40,16 +41,15 @@ const LogInView = ({onLogin} : LogInProps) => {
     }
 
     useEffect(() => {
-            if (apiKey?.apiKey === undefined){
-                Alert.alert("Wrong password or username")
-            } else {
-                const storeKey = async () => {
-                    await SecureStore.setItemAsync("apiKey", apiKey.apiKey)
-                }
-                storeKey()
-                onLogin()
-                //navigation.navigate("Home", {apiKey: apiKey.apiKey})
+
+        if (apiKey !== undefined){
+            const storeKey = async () => {
+                await SecureStore.setItemAsync("apiKey", apiKey.apiKey)
             }
+            storeKey()
+            onLogin()
+        }
+            //navigation.navigate("Home", {apiKey: apiKey.apiKey})
         },[apiKey])
 
     return(
