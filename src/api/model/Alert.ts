@@ -5,7 +5,7 @@ type Alert = {
     key: number;
     users: User[];
     event: Event;
-    isRead: boolean;
+    read: boolean;
 }
 
 export default Alert

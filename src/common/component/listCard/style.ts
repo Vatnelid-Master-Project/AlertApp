@@ -3,7 +3,7 @@ import { StyleSheet, useColorScheme } from "react-native"
 
 const style = StyleSheet.create({
     card : {
-        width: 225,
+        width: 300,
         backgroundColor: '#4b5763ff',
         borderRadius: 6,
         margin: 10

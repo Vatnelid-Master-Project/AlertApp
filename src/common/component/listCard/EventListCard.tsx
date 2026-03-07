@@ -8,13 +8,12 @@ interface EventListCardProps {
 }
 
 const EventListCard = ({event, onPress} : EventListCardProps) => {
-
     return (
     <Pressable onPress={onPress}>
         <View style={style.card}>
             <View style={style.left_component}>
                 <Text style={style.text}>Status: </Text>
-                <Text style={style.text}>{event?.isFall ? "Fall" : "Not fall"}</Text>
+                <Text style={style.text}>{event?.fall ? "Fall" : "Not fall"}</Text>
             </View>
             <View style={style.left_component}>
                 <Text style={style.text}>Date: </Text>

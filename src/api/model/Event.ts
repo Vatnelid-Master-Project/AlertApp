@@ -4,7 +4,7 @@ import Unit from './Unit'
 type Event = {
     key: number;
     unit: Unit;
-    isFall: boolean;
+    fall: boolean;
     eventOccurrence: string;
 }
 

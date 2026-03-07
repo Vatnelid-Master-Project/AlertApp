@@ -21,7 +21,6 @@ export class ApiController {
     }
 
     public async fetchAlerts(accessToken : Auth0Token, date: String) : Promise<Alert[]> {
-        
         const response = await fetch(`${apiUri}/Alert?limit=5&date=${date}`, {
             headers: {
                 "Authorization": `Bearer ${accessToken.access_token}`
